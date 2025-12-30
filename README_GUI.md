@@ -80,6 +80,8 @@ garbage_sorting/
 ├── garbage/
 │   ├── cv.py                   # 原始摄像头检测代码
 │   └── infer_and_map.py        # 推理和映射函数
+|   |__ train.py               # 训练代码
+|   |__ garbage_train/         # 权重文件，模型性能可视化
 ├── templates/
 │   └── index.html              # Web界面HTML模板
 ├── uploads/                    # 上传图片存储目录（自动创建）

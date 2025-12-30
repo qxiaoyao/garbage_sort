@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>垃圾分类检测系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .upload-section {
+            text-align: center;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 15px 40px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .result-image {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .camera-controls {
+            margin-bottom: 20px;
+        }
+
+        .camera-select {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .camera-select select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #667eea;
+            font-size: 1em;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .camera-select input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #667eea;
+            font-size: 1em;
+            flex: 2;
+            min-width: 300px;
+        }
+
+        #videoStream {
+            width: 100%;
+            max-width: 100%;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status-success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status-info {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .info-box {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+        }
+
+        .info-box li {
+            margin: 5px 0;
+            color: #4a5568;
+        }
+
+        #fileName {
+            margin-top: 10px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ 垃圾分类检测系统</h1>
+
+        <!-- 图片上传检测 -->
+        <div class="card">
+            <h2>📷 图片检测</h2>
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <input type="file" id="imageInput" accept="image/*">
+                    <label for="imageInput" class="file-input-label">选择图片</label>
+                </div>
+                <div id="fileName"></div>
+                <br>
+                <button class="btn btn-primary" onclick="uploadImage()">开始检测</button>
+                
+                <div class="loading" id="uploadLoading">
+                    <div class="spinner"></div>
+                    <p>正在检测中...</p>
+                </div>
+                
+                <div id="uploadResult"></div>
+                <img id="resultImage" class="result-image" style="display:none;">
+            </div>
+        </div>
+
+        <!-- 实时摄像头检测 -->
+        <div class="card">
+            <h2>🎥 实时摄像头检测</h2>
+            <div class="camera-controls">
+                <div class="camera-select">
+                    <select id="cameraSource">
+                        <option value="1">电脑摄像头 (0)</option>
+                        <option value="0">外接摄像头 (1)</option>
+                        <option value="custom">自定义地址</option>
+                    </select>
+                    <input type="text" id="customSource" placeholder="例如: http://192.168.1.100:8080/video" style="display:none;">
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn btn-success" onclick="startCamera()">启动摄像头</button>
+                    <button class="btn btn-danger" onclick="stopCamera()">停止摄像头</button>
+                </div>
+                
+                <div id="cameraStatus"></div>
+            </div>
+            
+            <img id="videoStream" src="">
+            
+            <div class="info-box">
+                <h3>📱 使用自定义摄像头说明：</h3>
+                <ul>
+                    <li>1. 确保手机和电脑连接在同一WiFi网络</li>
+                    <li>2. 在应用中启动服务，获取视频流地址（例如: http://192.168.1.100:8080/video）</li>
+                    <li>3. 在上方选择"自定义地址"，输入手机摄像头的地址</li>
+                    <li>4. 点击"启动摄像头"即可使用手机进行实时检测</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 文件选择显示
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || '';
+            document.getElementById('fileName').textContent = fileName ? `已选择: ${fileName}` : '';
+        });
+
+        // 摄像头源选择
+        document.getElementById('cameraSource').addEventListener('change', function(e) {
+            const customInput = document.getElementById('customSource');
+            if (e.target.value === 'custom') {
+                customInput.style.display = 'block';
+            } else {
+                customInput.style.display = 'none';
+            }
+        });
+
+        // 上传图片并检测
+        async function uploadImage() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('请先选择图片！');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const loading = document.getElementById('uploadLoading');
+            const resultDiv = document.getElementById('uploadResult');
+            const resultImg = document.getElementById('resultImage');
+            
+            loading.style.display = 'block';
+            resultDiv.innerHTML = '';
+            resultImg.style.display = 'none';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                
+                if (data.success) {
+                    resultImg.src = data.result_image + '?t=' + new Date().getTime();
+                    resultImg.style.display = 'block';
+                    
+                    let categoryText = '<div class="info-box"><h3>🎯 检测结果：</h3>';
+                    
+                    if (data.details && data.details.length > 0) {
+                        categoryText += '<ul>';
+                        data.details.forEach((item, index) => {
+                            const bigCat = item['大分类'] || '未知';
+                            const smallCat = item['小分类'] || '未知';
+                            const conf = item['置信度'] || 0;
+                            categoryText += `<li><strong>${index + 1}. ${bigCat}</strong> → ${smallCat} <span style="color: #667eea;">(置信度: ${(conf * 100).toFixed(1)}%)</span></li>`;
+                        });
+                        categoryText += '</ul>';
+                        
+                        // 添加统计信息
+                        if (data.categories && Object.keys(data.categories).length > 0) {
+                            categoryText += '<h3>📊 分类统计：</h3><ul>';
+                            for (const [key, value] of Object.entries(data.categories)) {
+                                categoryText += `<li><strong>${key}</strong>: ${value} 个</li>`;
+                            }
+                            categoryText += '</ul>';
+                        }
+                    } else {
+                        categoryText += '<p style="color: #718096; font-style: italic;">未检测到垃圾物品</p>';
+                    }
+                    
+                    categoryText += '</div>';
+                    
+                    resultDiv.innerHTML = `<div class="status status-success">✅ 检测成功！</div>${categoryText}`;
+                } else {
+                    resultDiv.innerHTML = `<div class="status status-error">❌ 检测失败: ${data.error}</div>`;
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                resultDiv.innerHTML = `<div class="status status-error">上传失败: ${error.message}</div>`;
+            }
+        }
+
+        // 启动摄像头
+        async function startCamera() {
+            const sourceSelect = document.getElementById('cameraSource');
+            const customInput = document.getElementById('customSource');
+            
+            let source = sourceSelect.value;
+            if (source === 'custom') {
+                source = customInput.value.trim();
+                if (!source) {
+                    alert('请输入自定义摄像头地址！');
+                    return;
+                }
+            }
+
+            const statusDiv = document.getElementById('cameraStatus');
+            statusDiv.innerHTML = '<div class="status status-info">正在启动摄像头...</div>';
+
+            try {
+                const response = await fetch(`/camera/start/${encodeURIComponent(source)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const videoStream = document.getElementById('videoStream');
+                    videoStream.src = '/camera/stream?t=' + new Date().getTime();
+                    videoStream.style.display = 'block';
+                    statusDiv.innerHTML = `<div class="status status-success">${data.message}</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="status status-error">启动失败: ${data.error}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status status-error">启动失败: ${error.message}</div>`;
+            }
+        }
+
+        // 停止摄像头
+        async function stopCamera() {
+            const statusDiv = document.getElementById('cameraStatus');
+            
+            try {
+                const response = await fetch('/camera/stop');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const videoStream = document.getElementById('videoStream');
+                    videoStream.style.display = 'none';
+                    videoStream.src = '';
+                    statusDiv.innerHTML = `<div class="status status-info">${data.message}</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="status status-error">停止失败: ${data.error}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status status-error">停止失败: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
+
